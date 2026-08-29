@@ -1,24 +1,34 @@
 package team.ResumeMaker.config;
 
 import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-
 
 @Component
 public class MongoConfigDebug {
 
+    @Value("${spring.data.mongodb.uri}")
+    private String mongoUri;
+
     @PostConstruct
     public void debug() {
-        String uri = System.getenv("MONGODB_URI");
 
         System.out.println("========== MONGO DEBUG ==========");
-        System.out.println("MONGODB_URI exists: " + (uri != null));
-        System.out.println("MONGODB_URI length: " + (uri != null ? uri.length() : 0));
 
-        if (uri != null) {
-            System.out.println("MONGODB_URI starts with: " +
-                    uri.substring(0, Math.min(20, uri.length())));
+        String envUri = System.getenv("MONGODB_URI");
+
+        System.out.println("Environment variable exists: " + (envUri != null));
+
+        System.out.println("Spring Mongo URI exists: " + (mongoUri != null));
+
+        if (envUri != null) {
+            System.out.println("Environment URI starts with: "
+                    + envUri.substring(0, Math.min(20, envUri.length())));
+        }
+
+        if (mongoUri != null) {
+            System.out.println("Spring URI starts with: "
+                    + mongoUri.substring(0, Math.min(20, mongoUri.length())));
         }
 
         System.out.println("=================================");
