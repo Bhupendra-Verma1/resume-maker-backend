@@ -1,0 +1,44 @@
+services:
+  - type: web
+    name: resumemaker-api
+    env: docker
+    region: oregon
+    plan: free
+
+    dockerfilePath: ./Dockerfile
+
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+
+      # File Size
+      - key: MAX_FILE_SIZE
+        sync: false
+      - key: MAX_REQUEST_SIZE
+        sync: false
+
+      # MongoDB
+      - key: MONGODB_URI
+        sync: false
+
+      # GEMINI
+      - key: GEMINI_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        sync: false
+      - key: GEMINI_TEMPERATURE
+        sync: false
+
+      # Clerk
+      - key: CLERK_ISSUER
+        sync: false
+      - key: CLERK_JWKS_URL
+        sync: false
+      - key: CLERK_WEBHOOK_SECRET
+        sync: false
+
+      # Health check secret
+      - key: HEALTH_CHECK_SECRET
+        sync: false
+
+    healthCheckPath: /healthz
