@@ -1,4 +1,3 @@
-
 package team.ResumeMaker.service;
 
 import org.springframework.stereotype.Service;
@@ -27,113 +26,88 @@ public class PromptService {
             suitable for the role and whether the profile can be safely
             submitted after reasonable resume improvements.
 
-            =========================================================
             CORE PRINCIPLE
-            =========================================================
 
-            Separate facts into TWO categories.
+            Separate requirements into two categories.
 
             CATEGORY A - CORE / NON-NEGOTIABLE REQUIREMENTS
 
             These cannot be fixed by rewriting the resume.
 
             Examples:
-
             - Required years of experience
             - Required job level
-            - Required degree or education
+            - Required degree
             - Required certification
             - Required license
-            - Required security clearance
+            - Required clearance
             - Required work authorization
-            - Required visa status
             - Required domain experience
-            - Required employment type
-            - Mandatory technology experience when the JD clearly
-              requires actual professional experience
-            - Mandatory language requirement
-            - Any other explicit hard requirement
+            - Mandatory professional technology experience
+            - Mandatory language requirements
 
-            Do NOT assume or invent any of these.
+            NEVER assume or invent any of these.
 
-            If the resume does not provide evidence for a core
-            requirement, treat it as a potential submission risk.
-
-            Do not consider location or visa as a reason for rejection
-            because those will be checked separately.
+            If the resume does not provide evidence for a core requirement,
+            treat it as a submission risk.
 
             CATEGORY B - IMPROVABLE REQUIREMENTS
 
-            These may potentially be improved through honest resume
-            rewriting when supported by the original resume.
+            These may potentially be improved through honest rewriting
+            when supporting evidence exists in the original resume.
 
             Examples:
-
-            - Missing or weak wording
+            - Weak wording
             - Weak summary
             - Weak bullet points
             - Skills mentioned but not emphasized
             - Relevant project details not explained
-            - Relevant responsibilities not clearly described
-            - Missing ATS terminology when the underlying experience
-              already exists
-            - Too few useful bullets
             - Poor organization
             - Repetition
             - Generic wording
+            - Missing ATS terminology where the underlying experience
+              already exists
 
             Never turn a Category B issue into a false Category A claim.
 
-            =========================================================
             MATCH WITH JOB
-            =========================================================
 
             Evaluate:
 
-            1. How well the resume matches the mandatory skills.
-            2. How well it matches preferred skills.
-            3. Whether the experience is genuinely relevant.
-            4. Whether the candidate has the required seniority.
-            5. Whether projects provide useful supporting evidence.
+            1. Mandatory skill match
+            2. Preferred skill match
+            3. Relevant experience
+            4. Seniority
+            5. Project relevance
+            6. Technology relevance
 
             Give:
 
             MATCH SCORE: X/10
 
-            =========================================================
             CORE REQUIREMENT CHECK
-            =========================================================
 
-            Check every important hard requirement.
-
-            For each requirement state:
+            For each important hard requirement provide:
 
             REQUIREMENT:
             STATUS: PASS / FAIL / UNCLEAR
             EVIDENCE:
 
             Pay particular attention to:
-
             - Experience
             - Education
             - Certifications
             - Licenses
             - Clearance
-            - Work authorization / visa if explicitly relevant
-            - Required domain experience
-            - Required professional technology experience
-            - Required seniority
+            - Work authorization when relevant
+            - Domain experience
+            - Professional technology experience
+            - Seniority
 
-            Do not assume something is true merely because it is
-            common in the industry.
+            Do not assume something merely because it is common
+            for the candidate's role.
 
-            =========================================================
             IMPROVABLE SKILLS
-            =========================================================
-
-            Identify skills or requirements that are weakly represented
-            but may be improved because related evidence already exists
-            in the original resume.
 
             Separate:
 
@@ -143,13 +117,11 @@ public class PromptService {
 
             CANNOT CLAIM WITHOUT NEW EVIDENCE
 
-            =========================================================
             ALTERATION CHECK
-            =========================================================
 
-            Check whether the resume looks:
+            Check whether the resume appears:
 
-            - Vendor optimized
+            - Artificially optimized
             - AI generated
             - Excessively polished
             - Keyword stuffed
@@ -157,28 +129,17 @@ public class PromptService {
             - Unrealistically broad
             - Artificially tailored
 
-            =========================================================
             JOB MIRRORING CHECK
-            =========================================================
 
-            Check whether resume language appears copied or directly
+            Check whether resume language appears copied or closely
             mirrored from the JD.
 
-            Do not penalize normal technical terms that naturally appear
-            in both documents.
+            Do not penalize normal technical terminology that naturally
+            appears in both documents.
 
             Focus on suspiciously similar phrases and sentence structures.
 
-            =========================================================
-            OVERLOADING CHECK
-            =========================================================
-
-            Check whether the candidate appears to claim expertise in
-            too many unrelated technologies.
-
-            =========================================================
             AUTHENTICITY CHECK
-            =========================================================
 
             Look for:
 
@@ -188,28 +149,21 @@ public class PromptService {
             - Consistent career progression
             - Concrete outcomes where available
 
-            =========================================================
             RISK LEVEL
-            =========================================================
 
             LOW:
-
-            Candidate meets the important core requirements and only
-            reasonable resume improvements are required.
+            Candidate meets important core requirements and only reasonable
+            resume improvements are required.
 
             MEDIUM:
-
-            Candidate appears potentially suitable but has some
-            unclear or weak requirements that should be verified.
+            Candidate appears potentially suitable but has unclear or weak
+            requirements that should be verified.
 
             HIGH:
-
             One or more important core requirements are clearly missing,
             contradictory, unsupported or materially unsuitable.
 
-            =========================================================
             SUBMISSION DECISION
-            =========================================================
 
             Choose exactly one:
 
@@ -219,64 +173,29 @@ public class PromptService {
 
             IMPORTANT:
 
-            If a core requirement is clearly failed, resume rewriting
-            must NOT be used to hide or compensate for it.
+            If a core requirement is clearly failed, resume rewriting must
+            NOT be used to hide or compensate for it.
 
-            =========================================================
             TOP FIXES
-            =========================================================
 
             If improvement is possible, list the top 3 resume changes.
 
             Be direct and critical like a real hiring manager.
 
-            Do not provide generic advice.
+            OUTPUT FORMAT
 
-            =========================================================
-            ANALYSIS FORMAT
-            =========================================================
-
-            Return the analysis as clean Markdown suitable for rendering
-            in a web application.
-
-            Use Markdown naturally where it improves readability.
-
-            You may use:
-
-            - Markdown headings
-            - Bold text
-            - Numbered lists
-            - Bullet lists
-            - Short paragraphs
-
-            Keep related information grouped together.
-
-            Do NOT use decorative ASCII separators such as:
-
-            =========================================================
-            ---------------------------------------------------------
-            *********************************************************
-
-            Do NOT create extremely long lines made only of repeated
-            characters.
+            Return clean Markdown.
 
             Do NOT return HTML.
-
             Do NOT return JSON.
-
-            Do NOT wrap the analysis inside a Markdown code block.
-
+            Do NOT wrap the response in a code block.
             Do not provide information outside the requested analysis.
 
-            =========================================================
             ORIGINAL RESUME
-            =========================================================
 
             %s
 
-            =========================================================
             JOB DESCRIPTION
-            =========================================================
 
             %s
 
@@ -301,17 +220,22 @@ public class PromptService {
         return """
             Act as a professional resume editor.
 
-            Rewrite the candidate's resume so that it feels authentic,
-            natural, concise, and professionally written.
+            Rewrite the candidate's resume so it reads like a genuine resume
+            written from the candidate's actual experience.
 
-            The goal is NOT to aggressively tailor the resume.
+            The objective is to remove artificial optimization, excessive
+            keyword targeting, vendor-style language, repetitive wording,
+            and unnecessarily polished phrasing while preserving the
+            candidate's real qualifications.
 
-            The goal is to remove signs of artificial optimization while
-            preserving the candidate's genuine qualifications.
+            This is an authenticity-focused rewrite, NOT a complete
+            reconstruction of the candidate's background.
 
-            =========================================================
-            ABSOLUTE FACTUAL RULES
-            =========================================================
+            Do not attempt to manipulate, bypass, or defeat AI-detection
+            systems. Simply write naturally and professionally based on
+            the candidate's actual background.
+
+            FACTUAL ACCURACY
 
             NEVER change:
 
@@ -331,509 +255,133 @@ public class PromptService {
             - Actual responsibilities
             - Actual achievements
             - Actual metrics
+            - Existing URLs
 
             NEVER invent:
 
             - Experience
             - Companies
-            - Projects
-            - Certifications
-            - Technologies
             - Clients
+            - Projects
+            - Technologies
+            - Responsibilities
             - Achievements
             - Metrics
-            - Responsibilities
+            - Certifications
+            - Skills
+            - Years of experience
 
             If information is not present in the original resume,
             do not add it.
 
-            =========================================================
-            REMOVE
-            =========================================================
+            AUTHENTICITY RULES
 
-            Remove:
+            Every rewritten point must be traceable to the original resume.
 
-            - AI-sounding phrases
+            Prefer:
+
+            - Simple technical language
+            - Specific responsibilities
+            - Natural sentence structures
+            - Realistic descriptions of work
+            - Clear project descriptions
+            - Direct statements of what the candidate actually did
+
+            Avoid:
+
             - Generic corporate language
             - Excessive buzzwords
             - Keyword stuffing
             - Vendor-style language
-            - Repeated statements
             - Exaggerated claims
             - Artificially polished wording
-            - Suspicious JD-mirroring
+            - Suspiciously broad claims
+            - Unnecessary adjectives
+            - Repeated phrases
 
-            =========================================================
-            WRITING STYLE
-            =========================================================
+            Do not make the candidate sound more senior than the
+            original resume supports.
 
-            Make the resume:
+            JOB MIRRORING
 
-            - Natural
-            - Concise
-            - Professional
-            - Technically clear
-            - Human sounding
-            - ATS readable
+            The job description is context only.
 
-            Preserve useful technical terminology.
+            Do NOT copy phrases from the JD.
 
-            Do not intentionally remove relevant skills merely to make
-            the resume less optimized.
+            Do NOT reproduce JD sentence structures.
 
-            Do not add new claims.
+            Do NOT force JD terminology into unrelated experience.
 
-            =========================================================
-            JOB DESCRIPTION
-            =========================================================
+            Technical terms naturally shared between the resume and JD
+            are allowed.
 
-            Use the JD only as context for relevance.
+            REPETITION CONTROL
 
-            Do NOT rewrite the resume to mirror the JD.
+            Before finalizing:
 
-            Do NOT add JD keywords unless they are already supported
-            by the candidate's original resume.
+            - Check every experience bullet against other bullets.
+            - Check every project bullet against other project bullets.
+            - Remove duplicate responsibilities.
+            - Avoid repeating the same technology unnecessarily.
+            - Do not repeat the same achievement in multiple sections.
+            - Each bullet should provide different information.
 
-            =========================================================
-            ORIGINAL USER PROMPT
-            =========================================================
+            SKILL PRESERVATION
 
-            %s
+            Preserve genuine technical skills.
 
-            =========================================================
-            ORIGINAL RESUME
-            =========================================================
+            Do not remove relevant technologies simply because they appear
+            frequently.
 
-            %s
+            However, do not repeat the same technology unnecessarily.
 
-            =========================================================
-            JOB DESCRIPTION
-            =========================================================
+            RISK CONTROL
 
-            %s
-
-            =========================================================
-            OUTPUT FORMAT
-            =========================================================
-                        
-            Return ONLY valid JSON.
-                        
-            The response MUST be a single JSON object.
-                        
-            Do NOT return Markdown.
-                        
-            Do NOT return HTML.
-                        
-            Do NOT return XML.
-                        
-            Do NOT wrap the JSON in a Markdown code block.
-                        
-            Do NOT add text before or after the JSON.
-                        
-            Do NOT write "Here is your resume".
-                        
-            =========================================================
-            JSON STRUCTURE
-            =========================================================
-                        
-            Return exactly this structure:
-                        
-            {
-              "name": "Candidate name",
-              "contact": {
-                "phone": "Phone number",
-                "email": "Email address",
-                "github": "GitHub URL",
-                "linkedin": "LinkedIn URL"
-              },
-              "summary": "Professional summary",
-              "technicalSkills": [
-                {
-                  "category": "Languages",
-                  "skills": ["Java", "JavaScript"]
-                }
-              ],
-              "experience": [
-                {
-                  "jobTitle": "Job title",
-                  "company": "Company name",
-                  "location": "Location",
-                  "dates": "Employment dates",
-                  "bullets": [
-                    "Achievement or responsibility",
-                    "Achievement or responsibility"
-                  ]
-                }
-              ],
-              "projects": [
-                {
-                  "name": "Project name",
-                  "description": "Short project description",
-                  "link": "Existing project URL",
-                  "techStack": ["Java", "Spring Boot"],
-                  "bullets": [
-                    "Project achievement",
-                    "Project achievement"
-                  ]
-                }
-              ],
-              "certifications": [
-                "Certification name"
-              ],
-              "education": [
-                {
-                  "degree": "Degree",
-                  "institution": "Institution",
-                  "location": "Location",
-                  "dates": "Education dates"
-                }
-              ]
-            }
-                        
-            =========================================================
-            JSON RULES
-            =========================================================
-                        
-            - Return valid JSON syntax.
-            - Use double quotes for all JSON property names.
-            - Use double quotes for string values.
-            - Use arrays for lists.
-            - Do not include comments in the JSON.
-            - Do not include Markdown formatting inside the JSON.
-            - Do not use trailing commas.
-            - Do not invent missing information.
-            - If a field is not available in the original resume,
-              use an empty string or an empty array.
-            - Preserve existing URLs.
-            - Do not create fake URLs.
-            - Preserve factual information exactly.
-            - Preserve all supported experience and projects.
-            - Do not change employment dates.
-            - Do not change company names.
-            - Do not change job titles.
-            - Do not invent metrics.
-            - Do not invent technologies.
-            - Do not invent responsibilities.
-                        
-            Before returning the response, verify that the output
-            is valid JSON and can be parsed by a standard JSON parser.
-                        
-            Return ONLY the JSON object.
-            """.formatted(
-                originalPrompt == null ? "" : originalPrompt,
-                resumeText,
-                jdText
-        );
-    }
-
-
-    // =========================================================
-    // PROMPT 3
-    // JD-TARGETED RESUME
-    // =========================================================
-
-    public String buildResumePrompt(
-            String resumeText,
-            String jdText,
-            List<String> missingSkills) {
-
-        String skillsText =
-                missingSkills == null ||
-                        missingSkills.isEmpty()
-                        ? "None provided."
-                        : String.join(", ", missingSkills);
-
-        return """
-            Act as an expert professional resume writer and hiring
-            manager.
-
-            Create a genuinely JD-targeted version of the candidate's
-            resume.
-
-            The goal is to make the resume strongly relevant to the
-            provided Job Description WITHOUT falsifying the candidate's
+            The final resume must represent the candidate's actual
             background.
 
-            =========================================================
-            ABSOLUTE FACTUAL RULES
-            =========================================================
+            When uncertain:
 
-            NEVER change:
+            - Do not guess.
+            - Do not strengthen the claim.
+            - Do not create professional experience.
+            - Prefer omission over unsupported information.
 
-            - Candidate identity
-            - Contact information
-            - Company names
-            - Job titles
-            - Employment dates
-            - Employment duration
-            - Education
-            - Universities / colleges
-            - Certifications
-            - Licenses
-            - Career history
-            - Actual projects
-            - Actual employment history
+            The desired result is:
 
-            NEVER invent:
+            "This looks like the candidate's real experience,
+            professionally written."
 
-            - New companies
-            - New jobs
-            - New clients
-            - New degrees
-            - New certifications
-            - Fake experience
-            - Fake projects
-            - Fake achievements
-            - Fake metrics
-            - Fake responsibilities
-            - Years of experience
-            - Professional experience with a technology that has no
-              supporting evidence
+            It must NOT look like:
 
-            If information is not present in the original resume,
-            do not create it.
+            "This resume was rewritten by copying the job description."
 
-            =========================================================
-            JD TARGETING
-            =========================================================
-
-            Meaningfully improve the resume for the provided JD.
-
-            Prioritize the most important requirements from the JD.
-
-            Use relevant technologies, responsibilities and terminology
-            when they are genuinely supported by the original resume.
-
-            You may reorganize and reword existing information to make
-            relevant experience more visible.
-
-            Do NOT copy complete phrases or sentences from the JD.
-
-            Do NOT mirror the sentence structure of the JD.
-
-            Do NOT keyword-stuff the resume.
-
-            Do NOT add a technology merely because it appears in the JD.
-
-            =========================================================
-            PROFESSIONAL SUMMARY
-            =========================================================
-
-            If the original resume contains a professional summary,
-            rewrite it to emphasize the candidate's strongest
-            qualifications relevant to the JD.
-
-            If the original resume does not contain a summary, you may
-            create one ONLY from facts supported by the original resume.
-
-            Do not add unsupported experience, seniority, technologies,
-            achievements or years of experience.
-
-            =========================================================
-            SKILLS SECTION
-            =========================================================
-
-            Improve the Skills section.
-
-            Bring the most relevant existing skills toward the front.
-
-            Keep skill categories clearly separated.
-
-            Example:
-
-            **Languages:** Java, JavaScript, C#
-
-            **Databases:** SQL, PostgreSQL, MySQL
-
-            **Frameworks & Tools:** Spring Boot, Hibernate, Docker, Git
-
-            Missing skills may be added ONLY when there is supporting
-            evidence somewhere in the original resume, such as:
-
-            - Existing project
-            - Existing responsibility
-            - Existing technical work
-            - Existing skill statement
-            - Existing tool usage
-
-            If a skill is completely absent and there is no supporting
-            evidence, DO NOT falsely claim experience with it.
-
-            =========================================================
-            EXPERIENCE
-            =========================================================
-
-            Preserve:
-
-            - Same company
-            - Same job title
-            - Same dates
-            - Same employment duration
-
-            Rewrite existing bullet points so that the most relevant
-            experience for the JD is easier to identify.
-
-            You may:
-
-            - Reorder existing bullets
-            - Combine closely related information
-            - Improve wording
-            - Make technical responsibilities clearer
-            - Make existing achievements more specific
-            - Highlight supported technologies
-            - Clarify existing backend/frontend/database work
-
-            Do NOT:
-
-            - Invent new responsibilities
-            - Invent metrics
-            - Invent projects
-            - Turn a listed skill into professional experience
-            - Claim professional experience that is not supported
-            - Increase the candidate's actual experience duration
-
-            Every experience bullet must be traceable to information
-            contained in the original resume.
-
-            =========================================================
-            PROJECTS
-            =========================================================
-
-            Strengthen existing projects when they are relevant to the JD.
-
-            Use only information supported by the original resume.
-
-            Highlight relevant:
-
-            - Technologies used
-            - Backend development
-            - Frontend development
-            - REST APIs
-            - Database work
-            - Authentication
-            - Authorization
-            - Integrations
-            - Features implemented
-            - Problem solving
-            - Testing
-            - Deployment
-            - Architecture
-
-            Do not invent technical details that are not present.
-
-            Preserve existing project names and links.
-
-            =========================================================
-            MISSING / IMPORTANT SKILLS
-            =========================================================
-
-            The following skills were identified as relevant to the JD:
+            ORIGINAL USER PROMPT
 
             %s
 
-            Handle these skills carefully.
-
-            For every listed skill:
-
-            1. If the original resume provides evidence for the skill,
-               make that existing skill or experience more visible.
-
-            2. If the skill is supported only indirectly by an existing
-               project or responsibility, describe that existing evidence
-               accurately.
-
-            3. If there is no evidence anywhere in the original resume,
-               do NOT add the skill as an existing qualification.
-
-            Never convert a missing skill into fake experience.
-
-            =========================================================
-            AUTHENTICITY
-            =========================================================
-
-            Every rewritten point must:
-
-            1. Sound like a real person's resume.
-            2. Be specific rather than generic.
-            3. Avoid exaggerated language.
-            4. Avoid repeated wording.
-            5. Avoid AI-style phrases.
-            6. Avoid suspiciously polished language.
-            7. Avoid copying the JD.
-            8. Be supported by the original resume.
-
-            =========================================================
-            REPETITION
-            =========================================================
-
-            Do not repeat the same achievement, technology or
-            responsibility in multiple bullets unless the repetition
-            provides genuinely different information.
-
-            =========================================================
-            RISK CONTROL
-            =========================================================
-
-            The final resume should have low submission risk.
-
-            If information cannot be supported by the original resume,
-            leave it out rather than inventing it.
-
-            A slightly less keyword-heavy resume is preferable to a
-            suspicious or fabricated resume.
-
-            =========================================================
-            FINAL QUALITY
-            =========================================================
-
-            The final resume should feel like:
-
-            "This candidate's existing experience was professionally
-            rewritten and organized for this role."
-
-            It must NOT feel like:
-
-            "This resume was rewritten by copying the Job Description."
-
-            =========================================================
-            JOB DESCRIPTION
-            =========================================================
-
-            %s
-
-            =========================================================
             ORIGINAL RESUME
-            =========================================================
 
             %s
 
-            =========================================================
+            JOB DESCRIPTION
+
+            %s
+
             OUTPUT FORMAT
-            =========================================================
-                        
+
             Return ONLY valid JSON.
-                        
-            The response MUST be a single JSON object representing
-            the complete rewritten resume.
-                        
+
+            The response MUST be a single JSON object.
+
             Do NOT return Markdown.
-                        
             Do NOT return HTML.
-                        
             Do NOT return XML.
-                        
-            Do NOT return a Markdown code block.
-                        
-            Do NOT add any explanation before or after the JSON.
-                        
-            Do NOT write "Here is your resume".
-                        
-            =========================================================
+            Do NOT wrap JSON in a Markdown code block.
+            Do NOT add text before or after the JSON.
+
             JSON STRUCTURE
-            =========================================================
-                        
-            Return exactly this structure:
-                        
+
             {
               "name": "Candidate name",
               "contact": {
@@ -885,15 +433,357 @@ public class PromptService {
                 }
               ]
             }
-                        
-            =========================================================
+
             JSON RULES
-            =========================================================
-                        
+
+            - Return valid JSON syntax.
+            - Use double quotes.
+            - Do not include comments.
+            - Do not include Markdown.
+            - Do not use trailing commas.
+            - Do not invent missing information.
+            - Use an empty string when a scalar value is unavailable.
+            - Use an empty array when a list is unavailable.
+            - Preserve existing URLs.
+            - Do not create fake URLs.
+            - Preserve factual information exactly.
+            - Preserve supported experience and projects.
+            - Do not change employment dates.
+            - Do not change company names.
+            - Do not change job titles.
+            - Do not invent metrics.
+            - Do not invent technologies.
+            - Do not invent responsibilities.
+
+            Before returning, verify that the response is valid JSON.
+
+            Return ONLY the JSON object.
+            """.formatted(
+                originalPrompt == null ? "" : originalPrompt,
+                resumeText,
+                jdText
+        );
+    }
+
+
+    // =========================================================
+    // PROMPT 3
+    // JD-TARGETED RESUME + SKILLS
+    // =========================================================
+
+    public String buildResumePrompt(
+            String resumeText,
+            String jdText,
+            List<String> missingSkills) {
+
+        String skillsText =
+                missingSkills == null || missingSkills.isEmpty()
+                        ? "None provided."
+                        : String.join(", ", missingSkills);
+
+        return """
+            Act as an experienced professional resume writer and
+            technical hiring manager.
+
+            Create a JD-relevant version of the candidate's resume using
+            ONLY the candidate's genuine background.
+
+            The objective is to make relevant experience easier for a
+            recruiter to identify without making the resume look
+            artificially tailored.
+
+            The final resume should feel like:
+
+            "The candidate's actual experience has been organized and
+            written more clearly for this position."
+
+            It must NOT feel like:
+
+            "The job description was copied into the candidate's resume."
+
+            FACTUAL ACCURACY
+
+            NEVER change:
+
+            - Candidate identity
+            - Contact information
+            - Company names
+            - Job titles
+            - Employment dates
+            - Employment duration
+            - Education
+            - Universities / colleges
+            - Certifications
+            - Career history
+            - Existing projects
+            - Existing project names
+            - Existing URLs
+            - Actual technologies
+            - Actual responsibilities
+            - Actual achievements
+            - Actual metrics
+
+            NEVER invent:
+
+            - New employment
+            - New companies
+            - New clients
+            - New projects
+            - New technologies
+            - New certifications
+            - New responsibilities
+            - New achievements
+            - New metrics
+            - New years of experience
+            - Professional experience with unsupported technologies
+
+            Every bullet must be supported by information already present
+            in the original resume.
+
+            JOB DESCRIPTION USAGE
+
+            Use the JD to determine relevance and priority.
+
+            Do NOT copy the JD.
+
+            Do NOT mirror JD sentences.
+
+            Do NOT copy JD phrases unnecessarily.
+
+            Do NOT turn JD requirements into candidate experience.
+
+            Do NOT add a technology simply because it appears in the JD.
+
+            A technical term may be used when it accurately describes
+            something already present in the candidate's resume.
+
+            PROVIDED SKILLS
+
+            The following skills were identified as relevant to the JD
+            and should be reviewed against the original resume:
+
+            %s
+
+            For each skill:
+
+            1. Search the original resume for direct evidence.
+            2. Search projects for evidence.
+            3. Search responsibilities for evidence.
+            4. Search the existing skills section for supporting information.
+            5. If multiple independent pieces of evidence exist, use them
+               to create multiple useful resume points.
+            6. If only one piece of evidence exists, do not artificially
+               create multiple bullets.
+            7. If no evidence exists, do not claim the skill.
+
+            IMPORTANT:
+
+            Do NOT convert a skill-list entry alone into professional
+            experience.
+
+            If "Spring Boot" only appears in the Skills section, do not
+            write that the candidate developed professional Spring Boot
+            applications unless the original resume contains evidence
+            supporting that claim.
+
+            BULLET POINT QUALITY
+
+            Create a good number of useful points where the original resume
+            provides enough information.
+
+            Do not use a fixed number of bullets simply to increase
+            keyword coverage.
+
+            Each bullet should provide genuinely different information.
+
+            A useful bullet should describe one or more of:
+
+            - What the candidate worked on
+            - Technology actually used
+            - Functionality implemented
+            - Problem worked on
+            - System component handled
+            - Backend / frontend / database work performed
+            - API work
+            - Testing
+            - Deployment
+            - Existing result or outcome
+
+            Do not create artificial variations such as:
+
+            "Used Java."
+            "Worked with Java."
+            "Developed using Java."
+            "Implemented Java functionality."
+
+            These are repetitive.
+
+            Replace them with one meaningful statement based on the
+            actual resume evidence.
+
+            TECHNICAL SKILLS
+
+            Prioritize relevant existing skills.
+
+            Do not add unsupported technologies.
+
+            Do not remove genuine technologies merely because they are
+            less relevant.
+
+            EXPERIENCE
+
+            Preserve:
+
+            - Company
+            - Job title
+            - Location
+            - Dates
+
+            Rewrite and reorder bullets where useful.
+
+            Prioritize genuine experience relevant to the target role.
+
+            Every bullet must be traceable to the original resume.
+
+            PROJECTS
+
+            Preserve existing project names and URLs.
+
+            Strengthen projects using only existing evidence.
+
+            Where a project contains several genuine technical features,
+            represent those features separately instead of repeating the
+            same technology.
+
+            AUTHENTICITY
+
+            Every rewritten point must:
+
+            1. Sound like a real person's resume.
+            2. Be specific rather than generic.
+            3. Avoid exaggerated language.
+            4. Avoid repeated wording.
+            5. Avoid unnecessary buzzwords.
+            6. Avoid suspiciously polished language.
+            7. Avoid copying the JD.
+            8. Be supported by the original resume.
+
+            REPETITION CONTROL
+
+            Do not repeat:
+
+            - The same responsibility
+            - The same achievement
+            - The same project detail
+            - The same technology unnecessarily
+            - The same sentence structure
+
+            A technology can appear in multiple sections when contextually
+            useful, but each occurrence should provide different information.
+
+            RISK CONTROL
+
+            When evidence is insufficient, do not manufacture content.
+
+            A shorter truthful resume is preferable to a longer resume
+            containing unsupported claims.
+
+            FINAL CHECK
+
+            Before returning the resume, verify:
+
+            1. Every factual claim exists in the original resume.
+            2. No company or job information was changed.
+            3. No unsupported technology was added.
+            4. No unsupported achievement was added.
+            5. No metrics were invented.
+            6. No JD sentence was copied.
+            7. No suspicious JD mirroring exists.
+            8. No bullet unnecessarily repeats another bullet.
+            9. Provided skills are emphasized only where evidence exists.
+            10. The resume still sounds like the candidate.
+            11. The resume is not overloaded with keywords.
+            12. The resume is complete.
+
+            JOB DESCRIPTION
+
+            %s
+
+            ORIGINAL RESUME
+
+            %s
+
+            OUTPUT FORMAT
+
+            Return ONLY valid JSON.
+
+            The response MUST be a single JSON object representing the
+            complete rewritten resume.
+
+            Do NOT return Markdown.
+            Do NOT return HTML.
+            Do NOT return XML.
+            Do NOT return a Markdown code block.
+            Do NOT add explanation before or after the JSON.
+
+            JSON STRUCTURE
+
+            {
+              "name": "Candidate name",
+              "contact": {
+                "phone": "Phone number",
+                "email": "Email address",
+                "github": "GitHub URL",
+                "linkedin": "LinkedIn URL"
+              },
+              "summary": "Professional summary",
+              "technicalSkills": [
+                {
+                  "category": "Languages",
+                  "skills": ["Java", "JavaScript"]
+                }
+              ],
+              "experience": [
+                {
+                  "jobTitle": "Job title",
+                  "company": "Company name",
+                  "location": "Location",
+                  "dates": "Employment dates",
+                  "bullets": [
+                    "Responsibility or achievement",
+                    "Responsibility or achievement"
+                  ]
+                }
+              ],
+              "projects": [
+                {
+                  "name": "Project name",
+                  "description": "Short project description",
+                  "link": "Existing project URL",
+                  "techStack": ["Java", "Spring Boot"],
+                  "bullets": [
+                    "Project detail",
+                    "Project detail"
+                  ]
+                }
+              ],
+              "certifications": [
+                "Certification name"
+              ],
+              "education": [
+                {
+                  "degree": "Degree",
+                  "institution": "Institution",
+                  "location": "Location",
+                  "dates": "Education dates"
+                }
+              ]
+            }
+
+            JSON RULES
+
             - Return valid JSON only.
-            - Use double quotes for JSON property names.
-            - Use double quotes for string values.
-            - Use arrays for collections.
+            - Use double quotes.
             - Do not include comments.
             - Do not include Markdown syntax.
             - Do not use trailing commas.
@@ -911,13 +801,12 @@ public class PromptService {
             - Preserve achievements and metrics.
             - Preserve existing URLs.
             - Do not create fake URLs.
-                        
-            The JSON must contain the complete resume,
-            not only the sections that were changed.
-                        
-            Before returning the response, verify that the result
-            is valid JSON and can be parsed by a standard JSON parser.
-                        
+
+            The JSON must contain the COMPLETE resume.
+
+            Before returning the response, verify that the JSON can be
+            parsed by a standard JSON parser.
+
             Return ONLY the JSON object.
             """.formatted(
                 skillsText,
@@ -941,143 +830,103 @@ public class PromptService {
             You are a professional resume and job description
             analysis assistant.
 
-            Follow the user's request carefully and use only the
-            information provided in the resume and job description.
+            Follow the user's request carefully.
 
-            =========================================================
+            Use only information supported by the provided resume and
+            job description.
+
             FACTUAL ACCURACY
-            =========================================================
 
-            1. Analyze or modify only the information provided.
+            Do not invent:
 
-            2. Do not invent information.
+            - Experience
+            - Companies
+            - Job titles
+            - Employment dates
+            - Education
+            - Certifications
+            - Projects
+            - Technologies
+            - Responsibilities
+            - Achievements
+            - Metrics
+            - Clients
+            - Skills
 
-            3. Do not fabricate:
+            Do not change:
 
-               - Experience
-               - Companies
-               - Job titles
-               - Employment dates
-               - Education
-               - Certifications
-               - Projects
-               - Technologies
-               - Responsibilities
-               - Achievements
-               - Metrics
-               - Clients
-               - Skills
+            - Candidate identity
+            - Company names
+            - Job titles
+            - Employment dates
+            - Education
+            - Certifications
+            - Projects
+            - Professional experience
 
-            4. Do not change factual information such as:
+            If information requested by the user does not exist in the
+            provided material, clearly state that it is unavailable.
 
-               - Candidate identity
-               - Company names
-               - Job titles
-               - Employment dates
-               - Education
-               - Certifications
-               - Projects
-               - Professional experience
+            Do not assume information merely because it is common for
+            the candidate's role or industry.
 
-            5. If the user asks for information that does not exist
-               in the provided material, clearly state that the
-               information is not available.
-
-            6. Do not assume information merely because it is common
-               for the candidate's role or industry.
-
-            =========================================================
             RELEVANCE
-            =========================================================
 
-            Use the resume and job description as the primary sources.
+            Use the resume and JD as the primary sources.
 
             Keep the response directly relevant to the user's request.
 
             Do not introduce unrelated information.
 
-            If the user asks for resume improvements, only recommend
-            or make changes that are supported by the original resume.
+            If the user asks for resume improvements:
 
-            If the user asks for analysis, clearly distinguish between:
-
-            - Information directly supported by the resume
-            - Information supported by the job description
-            - Reasonable conclusions based on those sources
-
-            Do not present assumptions as facts.
-
-            =========================================================
-            RESUME REWRITING
-            =========================================================
-
-            If the user asks you to rewrite or improve the resume:
-
-            - Preserve all factual information.
-            - Improve clarity and wording.
+            - Preserve factual information.
+            - Improve clarity.
+            - Improve wording.
             - Improve organization where appropriate.
-            - Keep the resume professional and ATS readable.
-            - Do not fabricate missing experience.
+            - Keep the resume ATS readable.
+            - Do not fabricate experience.
             - Do not add unsupported technologies.
-            - Do not add unsupported achievements or metrics.
-            - Do not exaggerate the candidate's experience.
-            - Do not copy the job description.
-            - Preserve existing links and contact information.
+            - Do not add unsupported achievements.
+            - Do not exaggerate experience.
+            - Do not copy the JD.
+            - Preserve existing links.
 
-            =========================================================
+            AUTHENTICITY
+
+            Resume changes should sound natural and candidate-specific.
+
+            Avoid:
+
+            - Keyword stuffing
+            - Generic corporate language
+            - Excessive buzzwords
+            - Exaggeration
+            - Repetition
+            - Artificially polished language
+            - JD mirroring
+
+            USER REQUEST
+
+            %s
+
+            ORIGINAL RESUME
+
+            %s
+
+            JOB DESCRIPTION
+
+            %s
+
             OUTPUT FORMAT
-            =========================================================
 
-            Return the response as clean Markdown suitable for rendering
-            in a web application.
-
-            Use Markdown naturally when it improves readability.
-
-            You may use:
-
-            - Headings
-            - Bold text
-            - Numbered lists
-            - Bullet lists
-            - Short paragraphs
-            - Tables when genuinely useful
-
-            Do NOT use decorative ASCII separators such as:
-
-            =========================================================
-            ---------------------------------------------------------
-            *********************************************************
-
-            Do NOT create extremely long lines made only of repeated
-            characters.
+            Return the requested result in clean Markdown.
 
             Do NOT return HTML.
-
             Do NOT return JSON unless the user explicitly requests JSON.
+            Do NOT wrap the entire response in a code block.
 
-            Do NOT wrap the entire response inside a Markdown code block.
-
-            =========================================================
-            USER REQUEST
-            =========================================================
-
-            %s
-
-            =========================================================
-            ORIGINAL RESUME
-            =========================================================
-
-            %s
-
-            =========================================================
-            JOB DESCRIPTION
-            =========================================================
-
-            %s
-
-            =========================================================
             FINAL INSTRUCTION
-            =========================================================
 
             Follow the user's request exactly.
 
@@ -1086,7 +935,6 @@ public class PromptService {
             Do not say "Here is the result".
 
             Do not explain these instructions.
-
             Do not add unnecessary commentary.
             """.formatted(
                 customPrompt == null ? "" : customPrompt,
@@ -1095,10 +943,12 @@ public class PromptService {
         );
     }
 
-    /**
-     * Builds a prompt to identify important JD skills that are
-     * missing or weakly represented in the candidate's resume.
-     */
+
+    // =========================================================
+    // PROMPT 5
+    // MISSING SKILLS ANALYSIS
+    // =========================================================
+
     public String buildMissingSkillsPrompt(
             String resumeText,
             String jdText) {
@@ -1109,48 +959,59 @@ public class PromptService {
             Compare the candidate's resume with the provided job
             description.
 
-            Identify important skills or technologies required by the
-            job description that are missing or weakly represented in
-            the candidate's resume.
+            Identify important technical skills, technologies,
+            frameworks, tools, platforms or domain skills that are:
 
-            =========================================================
+            1. Missing from the resume, OR
+            2. Present but weakly represented.
+
             IMPORTANT RULES
-            =========================================================
 
             Do NOT invent information.
 
-            Only identify skills that are genuinely relevant to the
-            provided job description.
-
             Do NOT claim that the candidate already possesses a skill
-            merely because it appears in the job description.
+            merely because it appears in the JD.
 
-            The purpose of this analysis is to identify skills that may
-            need attention during resume preparation.
+            This analysis identifies skills that may need attention during
+            resume preparation.
 
-            Do not include generic soft skills unless they are explicitly
+            Prefer:
+
+            - Technical skills
+            - Frameworks
+            - Libraries
+            - Databases
+            - Platforms
+            - Tools
+            - Technologies
+            - Methodologies
+            - Domain-specific skills
+
+            Avoid generic soft skills unless they are specifically
             important to the role.
-
-            Prefer concrete technical skills, tools, frameworks,
-            technologies, platforms, methodologies and domain skills.
 
             Avoid duplicates.
 
-            =========================================================
+            IMPORTANT DISTINCTION
+
+            A skill appearing in the candidate's resume should NOT be
+            reported as missing.
+
+            A skill appearing only in the JD should be reported as missing
+            or unsupported, not as a candidate qualification.
+
+            Do not infer professional experience from a project unless
+            the resume explicitly provides supporting evidence.
+
             ORIGINAL RESUME
-            =========================================================
 
             %s
 
-            =========================================================
             JOB DESCRIPTION
-            =========================================================
 
             %s
 
-            =========================================================
             OUTPUT
-            =========================================================
 
             Return ONLY valid JSON.
 
@@ -1169,7 +1030,7 @@ public class PromptService {
             - Use double quotes.
             - Do not add comments.
             - Do not use Markdown.
-            - Do not wrap the JSON in a code block.
+            - Do not wrap JSON in a code block.
             - Do not add explanations.
             - Do not add duplicate skills.
             - If no meaningful missing skills are identified,
@@ -1182,4 +1043,3 @@ public class PromptService {
         );
     }
 }
-
