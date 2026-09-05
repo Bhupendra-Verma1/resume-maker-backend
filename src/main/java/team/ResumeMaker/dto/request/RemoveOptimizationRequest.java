@@ -1,7 +1,9 @@
 package team.ResumeMaker.dto.request;
 
+import team.ResumeMaker.dto.response.GeneratedResume;
+
 public record RemoveOptimizationRequest(
-        String resumeText,
+        GeneratedResume resume,
         String jobDescription,
         String promptMode,
         String customPrompt

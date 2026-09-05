@@ -1,10 +1,7 @@
 
 package team.ResumeMaker.controller;
 
-import team.ResumeMaker.dto.request.AnalyzeResumeRequest;
-import team.ResumeMaker.dto.request.GenerateResumeRequest;
-import team.ResumeMaker.dto.request.MissingSkillsRequest;
-import team.ResumeMaker.dto.request.RemoveOptimizationRequest;
+import team.ResumeMaker.dto.request.*;
 import team.ResumeMaker.dto.response.AnalyzeResumeResponse;
 import team.ResumeMaker.dto.response.GenerateResumeResponse;
 import team.ResumeMaker.dto.response.MissingSkillsResponse;
@@ -26,29 +23,25 @@ public class ResumeController {
         this.resumeService = resumeService;
     }
 
-    /**
-     * Analyze a resume against a job description.
-     *
-     * POST /api/resume/analyze
-     *
-     * Content-Type:
-     * multipart/form-data
-     *
-     * Form fields:
-     * - resume
-     * - jobDescription
-     * - mode
-     * - customPrompt
-     */
     @PostMapping(
-            value = "/analyze",
+            value = "/parse-resume",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
-    public ResponseEntity<AnalyzeResumeResponse> analyzeResume(
-            @ModelAttribute AnalyzeResumeRequest request)
+    public ResponseEntity<ParseResumeResponse> parseResume(
+            @ModelAttribute ParseResumeRequest request)
             throws IOException {
+        ParseResumeResponse response =
+                resumeService.parseResume(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/analyze")
+    public ResponseEntity<AnalyzeResumeResponse> analyzeResume(
+            @RequestBody AnalyzeResumeRequest request) {
+
         AnalyzeResumeResponse response =
                 resumeService.analyzeResume(request);
+
         return ResponseEntity.ok(response);
     }
 
