@@ -1,12 +1,10 @@
 package team.ResumeMaker.dto.request;
 
-import org.springframework.web.multipart.MultipartFile;
+import team.ResumeMaker.dto.response.GeneratedResume;
 
 public record AnalyzeResumeRequest(
-        MultipartFile resume,
+        GeneratedResume resume,
         String jobDescription,
         String mode,
         String customPrompt
-
-) {
-}
+) {}

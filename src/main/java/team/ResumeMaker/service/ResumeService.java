@@ -1,60 +1,40 @@
 package team.ResumeMaker.service;
 
-import team.ResumeMaker.dto.request.AnalyzeResumeRequest;
-import team.ResumeMaker.dto.request.GenerateResumeRequest;
-import team.ResumeMaker.dto.request.MissingSkillsRequest;
-import team.ResumeMaker.dto.request.RemoveOptimizationRequest;
-import team.ResumeMaker.dto.response.AnalyzeResumeResponse;
-import team.ResumeMaker.dto.response.GenerateResumeResponse;
+import lombok.RequiredArgsConstructor;
+import team.ResumeMaker.dto.ResumePatch;
+import team.ResumeMaker.dto.request.*;
+import team.ResumeMaker.dto.response.*;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import team.ResumeMaker.dto.response.GeneratedResume;
-import team.ResumeMaker.dto.response.MissingSkillsResponse;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ResumeService {
 
     private final FileParserService fileParserService;
     private final PromptService promptService;
     private final GeminiService geminiService;
+    private final ResumePatchService resumePatchService;
+    private final ResumeParserService resumeParser;
 
-    public ResumeService(
-            FileParserService fileParserService,
-            PromptService promptService,
-            GeminiService geminiService) {
+    public ParseResumeResponse parseResume(ParseResumeRequest request) throws IOException {
+        if (request == null) {
+            throw new IllegalArgumentException(
+                    "Analyze request must not be null."
+            );
+        }
 
-        this.fileParserService = fileParserService;
-        this.promptService = promptService;
-        this.geminiService = geminiService;
-    }
+        if (request.resume() == null ||
+                request.resume().isEmpty()) {
 
-    /**
-     * Analyzes a resume against a job description.
-     *
-     * Legacy flow:
-     *
-     * Resume file
-     *      ↓
-     * FileParserService
-     *      ↓
-     * Resume text
-     *      ↓
-     * PromptService
-     *      ↓
-     * GeminiService
-     *      ↓
-     * Analysis result
-     */
-    public AnalyzeResumeResponse analyzeResume(
-            AnalyzeResumeRequest request)
-            throws IOException {
-
-        validateAnalyzeRequest(request);
+            throw new IllegalArgumentException(
+                    "Please upload your resume."
+            );
+        }
 
         MultipartFile resumeFile = request.resume();
 
@@ -69,9 +49,14 @@ public class ResumeService {
                     "Could not extract text from the resume."
             );
         }
+        GeneratedResume resume = resumeParser.parse(resumeText);
+        return new ParseResumeResponse(resume);
+    }
 
-        String jobDescription =
-                request.jobDescription();
+    public AnalyzeResumeResponse analyzeResume(
+            AnalyzeResumeRequest request) {
+
+        validateAnalyzeRequest(request);
 
         String finalPrompt;
 
@@ -86,49 +71,33 @@ public class ResumeService {
             }
 
             finalPrompt =
-                    promptService.buildCustomPrompt(
-                            resumeText,
-                            jobDescription,
+                    promptService.buildCustomPromptStructureResult(
+                            request.resume(),
+                            request.jobDescription(),
                             request.customPrompt()
                     );
 
         } else {
 
             finalPrompt =
-                    promptService.buildDefaultPrompt(
-                            resumeText,
-                            jobDescription
+                    promptService.buildDefaultPromptStructureResult(
+                            request.resume(),
+                            request.jobDescription()
                     );
         }
 
-        String result =
-                geminiService.askGemini(finalPrompt);
+        AnalyzeResumeResult result =
+                geminiService.analyzeResume(finalPrompt);
 
-        if (result == null || result.isBlank()) {
+        if (result == null) {
             throw new IllegalStateException(
                     "Gemini returned an empty response."
             );
         }
 
-        return new AnalyzeResumeResponse(result, resumeText);
+        return new AnalyzeResumeResponse(result);
     }
 
-
-    /**
-     * Generates a JD-targeted resume.
-     *
-     * Legacy flow:
-     *
-     * Resume text + JD
-     *        ↓
-     * Skill mode
-     *        ↓
-     * PromptService
-     *        ↓
-     * GeminiService
-     *        ↓
-     * Final resume
-     */
     public GenerateResumeResponse generateResume(
             GenerateResumeRequest request) {
 
@@ -138,34 +107,27 @@ public class ResumeService {
                 resolveMissingSkills(request);
 
         String prompt =
-                promptService.buildResumePrompt(
-                        request.resumeText(),
+                promptService.buildResumePatchPrompt(
+                        request.resume(),
                         request.jobDescription(),
                         missingSkills
                 );
 
-        GeneratedResume generatedResume =
-                geminiService.generateResume(prompt);
+        ResumePatch patch =
+                geminiService.generateResumePatch(prompt);
+
+        GeneratedResume finalResume =
+                resumePatchService.applyPatch(
+                        request.resume(),
+                        patch
+                );
+
 
         return new GenerateResumeResponse(
-                generatedResume
+                finalResume
         );
     }
 
-
-    /**
-     * Removes artificial/vendor-style optimization from a resume.
-     *
-     * Legacy flow:
-     *
-     * Resume + JD + original prompt
-     *              ↓
-     * PromptService
-     *              ↓
-     * GeminiService
-     *              ↓
-     * Rewritten resume
-     */
     public GenerateResumeResponse removeOptimization(
             RemoveOptimizationRequest request) {
 
@@ -180,14 +142,20 @@ public class ResumeService {
         }
 
         String finalPrompt =
-                promptService.buildRemoveOptimizationPrompt(
-                        request.resumeText(),
+                promptService.buildRemoveOptimizationPatchPrompt(
+                        request.resume(),
                         request.jobDescription(),
                         originalPrompt
                 );
 
+        ResumePatch patch =
+                geminiService.generateResumePatch(finalPrompt);
+
         GeneratedResume generatedResume =
-                geminiService.generateResume(finalPrompt);
+                resumePatchService.applyPatch(
+                        request.resume(),
+                        patch
+                );
 
         if (generatedResume == null) {
 
@@ -236,25 +204,11 @@ public class ResumeService {
                 return cleanSkills(
                         request.missingDetails()
                 );
+            } else {
+                throw new IllegalArgumentException(
+                        "Missing skill not found."
+                );
             }
-
-            MissingSkillsResponse response =
-                    findMissingSkills(
-                            new MissingSkillsRequest(
-                                    request.resumeText(),
-                                    request.jobDescription()
-                            )
-                    );
-
-            if (response.missingSkills() == null ||
-                    response.missingSkills().isEmpty()) {
-
-                return List.of();
-            }
-
-            return cleanSkills(
-                    response.missingSkills()
-            );
         }
 
 
@@ -337,29 +291,11 @@ public class ResumeService {
             );
         }
 
-        if (request.resume() == null ||
-                request.resume().isEmpty()) {
-
-            throw new IllegalArgumentException(
-                    "Please upload your resume."
-            );
-        }
-
         if (request.jobDescription() == null ||
                 request.jobDescription().isBlank()) {
 
             throw new IllegalArgumentException(
                     "Please enter the job description."
-            );
-        }
-
-        String fileName =
-                request.resume().getOriginalFilename();
-
-        if (fileName == null || fileName.isBlank()) {
-
-            throw new IllegalArgumentException(
-                    "Resume file name is missing."
             );
         }
     }
@@ -374,8 +310,7 @@ public class ResumeService {
             );
         }
 
-        if (request.resumeText() == null ||
-                request.resumeText().isBlank()) {
+        if (request.resume() == null) {
 
             throw new IllegalArgumentException(
                     "Resume data not found."
@@ -420,8 +355,7 @@ public class ResumeService {
             );
         }
 
-        if (request.resumeText() == null ||
-                request.resumeText().isBlank()) {
+        if (request.resume() == null) {
 
             throw new IllegalArgumentException(
                     "Resume data not found."
