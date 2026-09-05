@@ -18,12 +18,8 @@ public class PromptService {
     // 1. RESUME + JD ANALYSIS
     // =========================================================
 
-    public String buildDefaultPrompt(
-            GeneratedResume resume,
-            String jdText) {
-
+    public String buildDefaultPrompt(GeneratedResume resume, String jdText) {
         String resumeJson;
-
         try {
             resumeJson = objectMapper.writeValueAsString(resume);
         } catch (JsonProcessingException e) {
@@ -36,26 +32,14 @@ public class PromptService {
             Compare the ORIGINAL RESUME with the JOB DESCRIPTION.
 
             Evaluate:
-            1. Mandatory skills
-            2. Preferred skills
-            3. Relevant experience
-            4. Seniority
-            5. Domain experience
-            6. Technology relevance
+            - Mandatory skills
+            - Preferred skills
+            - Relevant experience
+            - Seniority
+            - Domain experience
+            - Technology relevance
 
-            Separate requirements into:
-
-            CORE:
-            Years of experience, degree, certification, license, clearance,
-            work authorization, domain experience and mandatory professional experience.
-
-            IMPROVABLE:
-            Weak wording, weak summary, missing emphasis, poor bullets,
-            organization and ATS terminology where supported.
-
-            Never assume missing core requirements.
-
-            Also check:
+            Check for:
             - AI-generated-looking content
             - JD mirroring
             - Keyword stuffing
@@ -65,7 +49,6 @@ public class PromptService {
 
             Return:
             MATCH SCORE: X/10
-
             CORE REQUIREMENT CHECK
             REQUIREMENT:
             STATUS: PASS / FAIL / UNCLEAR
@@ -73,20 +56,14 @@ public class PromptService {
 
             CAN IMPROVE SAFELY:
             -
-
             CANNOT CLAIM:
             -
 
-            AUTHENTICITY:
-            LOW / MEDIUM / HIGH
-
-            RISK LEVEL:
-            LOW / MEDIUM / HIGH
+            AUTHENTICITY: LOW / MEDIUM / HIGH
+            RISK LEVEL: LOW / MEDIUM / HIGH
 
             SUBMISSION DECISION:
-            SUBMIT
-            SUBMIT AFTER RESUME IMPROVEMENT
-            DO NOT SUBMIT
+            SUBMIT / SUBMIT AFTER RESUME IMPROVEMENT / DO NOT SUBMIT
 
             TOP FIXES:
             1.
@@ -107,11 +84,7 @@ public class PromptService {
     // 2. REMOVE AI / VENDOR OPTIMIZATION
     // =========================================================
 
-    public String buildRemoveOptimizationPrompt(
-            String resumeText,
-            String jdText,
-            String originalPrompt) {
-
+    public String buildRemoveOptimizationPrompt(String resumeText, String jdText, String originalPrompt) {
         return """
             Rewrite the resume for the given role.
 
@@ -163,55 +136,25 @@ public class PromptService {
                 "linkedin": ""
               },
               "summary": "",
-              "technicalSkills": [
-                {
-                  "category": "",
-                  "skills": []
-                }
-              ],
-              "experience": [
-                {
-                  "jobTitle": "",
-                  "company": "",
-                  "location": "",
-                  "dates": "",
-                  "bullets": []
-                }
-              ],
+              "technicalSkills": [],
+              "experience": [],
               "projects": [],
               "certifications": [],
-              "education": [
-                {
-                  "degree": "",
-                  "institution": "",
-                  "location": "",
-                  "dates": ""
-                }
-              ]
+              "education": []
             }
-            """.formatted(
-                originalPrompt == null ? "" : originalPrompt,
-                resumeText,
-                jdText
-        );
+            """.formatted(originalPrompt == null ? "" : originalPrompt, resumeText, jdText);
     }
 
     // =========================================================
-    // 3. MAIN JD-TARGETED RESUME GENERATION (Corrected)
+    // 3. MAIN JD-TARGETED RESUME GENERATION
     // =========================================================
 
-    public String buildResumePrompt(
-            GeneratedResume resume,
-            String jdText,
-            List<String> missingSkills) {
-
-        String skillsText =
-                missingSkills == null || missingSkills.isEmpty()
-                        ? "None"
-                        : String.join(", ", missingSkills);
+    public String buildResumePrompt(GeneratedResume resume, String jdText, List<String> missingSkills) {
+        String skillsText = (missingSkills == null || missingSkills.isEmpty())
+                ? "None"
+                : String.join(", ", missingSkills);
 
         String resumeJson;
-
         try {
             resumeJson = objectMapper.writeValueAsString(resume);
         } catch (JsonProcessingException e) {
@@ -274,31 +217,11 @@ public class PromptService {
                 "linkedin": ""
               },
               "summary": "",
-              "technicalSkills": [
-                {
-                  "category": "",
-                  "skills": []
-                }
-              ],
-              "experience": [
-                {
-                  "jobTitle": "",
-                  "company": "",
-                  "location": "",
-                  "dates": "",
-                  "bullets": []
-                }
-              ],
+              "technicalSkills": [],
+              "experience": [],
               "projects": [],
               "certifications": [],
-              "education": [
-                {
-                  "degree": "",
-                  "institution": "",
-                  "location": "",
-                  "dates": ""
-                }
-              ]
+              "education": []
             }
 
             JSON RULES:
@@ -309,11 +232,7 @@ public class PromptService {
             - No trailing commas
             - Empty string for unavailable scalar values
             - Empty array for unavailable lists
-            """.formatted(
-                skillsText,
-                jdText,
-                resumeJson
-        );
+            """.formatted(skillsText, jdText, resumeJson);
     }
             }
             
