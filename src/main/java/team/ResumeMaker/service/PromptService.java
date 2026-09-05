@@ -16,7 +16,7 @@ public class PromptService {
     private final ObjectMapper objectMapper;
 
     // =========================================================
-    // COMMON
+    // COMMON HELPERS
     // =========================================================
 
     private String serializeResume(GeneratedResume resume) {
@@ -34,14 +34,16 @@ public class PromptService {
         return value == null ? "" : value;
     }
 
-    private String skillsText(List<String> missingSkills) {
-        return missingSkills == null || missingSkills.isEmpty()
-                ? "None"
-                : String.join(", ", missingSkills);
+    private String formatMissingSkills(List<String> missingSkills) {
+        if (missingSkills == null || missingSkills.isEmpty()) {
+            return "None";
+        }
+
+        return String.join(", ", missingSkills);
     }
 
     // =========================================================
-    // 1. RESUME + JD ANALYSIS
+    // 1. DEFAULT RESUME ANALYSIS
     // =========================================================
 
     public String buildDefaultPrompt(
@@ -51,8 +53,8 @@ public class PromptService {
         String resumeJson = serializeResume(resume);
 
         return """
-                Act as a strict and objective hiring manager reviewing a
-                candidate for the given role.
+                Act as a strict hiring manager reviewing a candidate for the
+                given role.
 
                 Compare the ORIGINAL RESUME with the JOB DESCRIPTION.
 
@@ -69,26 +71,13 @@ public class PromptService {
                 Separate findings into:
 
                 CORE:
-                Requirements that cannot be safely changed through wording,
-                including actual experience duration, degree, certification,
-                authorization, domain experience and mandatory professional
-                experience.
+                Requirements that depend on actual candidate facts.
 
                 IMPROVABLE:
-                Things that can be improved without changing facts, including:
-                - wording
-                - summary
-                - clarity
-                - organization
-                - emphasis of existing skills
-                - better description of existing work
+                Things that can be improved through wording, clarity,
+                organization and better presentation of existing experience.
 
-                IMPORTANT:
-
-                The resume is the source of truth for candidate experience.
-
-                Never assume that a missing JD skill is possessed by the
-                candidate.
+                Never assume that a missing requirement is possessed.
 
                 Never invent:
                 - companies
@@ -97,19 +86,19 @@ public class PromptService {
                 - employment
                 - dates
                 - experience duration
+                - education
+                - certifications
                 - achievements
                 - metrics
-                - certifications
-                - education
 
-                Also evaluate whether the CURRENT resume contains:
-                - unnatural wording
-                - copied JD language
-                - excessive keyword repetition
-                - repetitive bullets
-                - generic resume language
+                Also check for:
+
+                - AI-looking language
+                - JD mirroring
+                - keyword stuffing
+                - repetitive wording
                 - unrealistic claims
-                - overly tailored wording
+                - artificial optimization
 
                 Return:
 
@@ -144,9 +133,11 @@ public class PromptService {
                 3.
 
                 ORIGINAL STRUCTURED RESUME:
+
                 %s
 
                 JOB DESCRIPTION:
+
                 %s
 
                 Return ONLY the analysis in clean Markdown.
@@ -157,7 +148,7 @@ public class PromptService {
     }
 
     // =========================================================
-    // 2. STRUCTURED RESUME ANALYSIS
+    // 2. DEFAULT STRUCTURED ANALYSIS
     // =========================================================
 
     public String buildDefaultPromptStructureResult(
@@ -169,19 +160,18 @@ public class PromptService {
         return """
                 Act as a strict and objective hiring manager.
 
-                Compare the ORIGINAL STRUCTURED RESUME with the JOB DESCRIPTION.
+                Compare the ORIGINAL STRUCTURED RESUME with the
+                JOB DESCRIPTION.
 
                 IMPORTANT RULES:
 
                 1. Return ONLY valid JSON.
                 2. Do NOT return Markdown.
-                3. Do NOT return explanations outside JSON.
+                3. Do NOT add explanations outside JSON.
                 4. Do NOT invent candidate information.
                 5. Do NOT assume missing skills are possessed.
                 6. Use only evidence from the resume and JD.
                 7. Preserve actual candidate facts.
-                8. Missing skills must mean skills explicitly required or
-                   strongly preferred by the JD but not supported by the resume.
 
                 NEVER change or reinterpret:
 
@@ -204,14 +194,7 @@ public class PromptService {
                 MATCH SCORE
                 =========================================================
 
-                Calculate a score from 0 to 10 using:
-
-                - mandatory requirements
-                - technical skills
-                - relevant experience
-                - seniority
-                - domain experience
-                - technology relevance
+                Calculate an overall match score from 0 to 10.
 
                 =========================================================
                 CORE REQUIREMENTS
@@ -224,7 +207,7 @@ public class PromptService {
                 - certification
                 - license
                 - clearance
-                - authorization
+                - work authorization
                 - mandatory professional experience
                 - mandatory domain experience
 
@@ -235,7 +218,7 @@ public class PromptService {
                 status
                 evidence
 
-                status must be exactly:
+                status must be:
 
                 PASS
                 FAIL
@@ -246,11 +229,11 @@ public class PromptService {
                 =========================================================
 
                 matchingSkills:
-                Skills clearly supported by the resume.
+                Skills supported by the resume and relevant to the JD.
 
                 missingSkills:
                 Skills explicitly required or strongly preferred by the JD
-                that are not supported by the resume.
+                but not supported by the resume.
 
                 preferredSkills:
                 Preferred or desirable JD skills.
@@ -258,30 +241,29 @@ public class PromptService {
                 unsupportedSkills:
                 Skills that cannot safely be claimed.
 
-                Do not classify a skill as missing if it is clearly present
-                under a reasonable variation of its name.
+                Do not classify a skill as missing when an equivalent
+                technology is clearly present.
 
                 =========================================================
-                EXPERIENCE
+                EXPERIENCE ANALYSIS
                 =========================================================
 
                 relevantExperience:
-                Actual experience that supports the JD.
+                Actual experience supporting the JD.
 
                 experienceGaps:
-                JD requirements that are not supported by the resume.
+                Important JD requirements not supported by the resume.
 
-                Do not invent experience.
+                Never invent experience.
 
                 =========================================================
                 SENIORITY
                 =========================================================
 
-                Compare required and candidate seniority using only resume
-                evidence.
+                Compare required seniority with candidate seniority.
 
                 =========================================================
-                DOMAIN
+                DOMAIN EXPERIENCE
                 =========================================================
 
                 Compare JD domain requirements with actual resume evidence.
@@ -294,8 +276,8 @@ public class PromptService {
                 Technologies in the resume relevant to the JD.
 
                 missingTechnologies:
-                Explicitly required or strongly preferred technologies not
-                supported by the resume.
+                Technologies explicitly required or strongly preferred
+                but not supported by the resume.
 
                 outdatedOrIrrelevantTechnologies:
                 Technologies with little relevance to this JD.
@@ -304,37 +286,35 @@ public class PromptService {
                 SAFE IMPROVEMENTS
                 =========================================================
 
-                Include improvements such as:
+                Include safe improvements such as:
 
-                - stronger wording of existing bullets
-                - better summary
-                - clearer description of existing work
-                - emphasizing technologies already supported
-                - better organization
-                - better use of relevant terminology
+                - improve wording
+                - improve summary
+                - emphasize existing skills
+                - improve bullet clarity
+                - improve organization
+                - highlight relevant experience
 
                 =========================================================
                 CANNOT CLAIM
                 =========================================================
 
-                Identify important claims that should not be made because
-                the resume does not support them.
+                Identify claims that should not be made without evidence.
 
                 =========================================================
                 AUTHENTICITY
                 =========================================================
 
-                Evaluate:
+                Check for:
 
-                - copied JD language
-                - sentence mirroring
+                - JD mirroring
                 - keyword stuffing
-                - repetition
-                - generic wording
+                - repetitive language
                 - unrealistic claims
-                - overly tailored language
+                - AI-looking language
+                - artificial optimization
 
-                level:
+                level must be:
 
                 LOW
                 MEDIUM
@@ -344,7 +324,7 @@ public class PromptService {
                 RISK
                 =========================================================
 
-                level:
+                level must be:
 
                 LOW
                 MEDIUM
@@ -419,14 +399,17 @@ public class PromptService {
                 }
 
                 ORIGINAL STRUCTURED RESUME:
+
                 %s
 
                 JOB DESCRIPTION:
+
                 %s
 
                 Return ONLY the JSON object.
+
                 Do not use ```json.
-                Do not add any explanation.
+                Do not add text before or after the JSON.
                 """.formatted(
                 resumeJson,
                 safe(jdText)
@@ -434,7 +417,147 @@ public class PromptService {
     }
 
     // =========================================================
-    // 3. REMOVE AI / OVER-OPTIMIZATION - PATCH VERSION
+    // 3. REMOVE OPTIMIZATION - COMPLETE VERSION
+    // =========================================================
+
+    public String buildRemoveOptimizationPrompt(
+            String resumeText,
+            String jdText,
+            String originalPrompt) {
+
+        return """
+                You are a professional resume editor.
+
+                Improve the ORIGINAL RESUME according to the USER REQUEST
+                and JOB DESCRIPTION.
+
+                The original resume is the source of truth.
+
+                =========================================================
+                IMMUTABLE INFORMATION
+                =========================================================
+
+                NEVER change:
+
+                - name
+                - phone
+                - email
+                - GitHub
+                - LinkedIn
+                - company names
+                - client names
+                - job titles
+                - locations
+                - employment dates
+                - employment order
+                - employment duration
+                - education
+                - degrees
+                - certifications
+                - project names
+                - project links
+
+                =========================================================
+                WRITING
+                =========================================================
+
+                Make the resume:
+
+                - natural
+                - concise
+                - professional
+                - technical
+                - candidate-specific
+
+                Do NOT:
+
+                - copy the JD
+                - mirror JD sentences
+                - keyword stuff
+                - repeat technologies unnecessarily
+                - use generic filler
+                - use artificial optimization language
+                - mention AI
+                - mention ATS optimization
+                - mention candidate matching
+                - mention vendor optimization
+                - fabricate experience
+                - fabricate metrics
+                - fabricate clients
+                - fabricate projects
+
+                =========================================================
+                USER REQUEST
+                =========================================================
+
+                %s
+
+                =========================================================
+                ORIGINAL RESUME
+                =========================================================
+
+                %s
+
+                =========================================================
+                JOB DESCRIPTION
+                =========================================================
+
+                %s
+
+                Return ONLY valid JSON.
+
+                {
+                  "name": "",
+                  "contact": {
+                    "phone": "",
+                    "email": "",
+                    "github": "",
+                    "linkedin": ""
+                  },
+                  "summary": "",
+                  "technicalSkills": [
+                    {
+                      "category": "",
+                      "skills": []
+                    }
+                  ],
+                  "experience": [
+                    {
+                      "jobTitle": "",
+                      "company": "",
+                      "location": "",
+                      "dates": "",
+                      "bullets": []
+                    }
+                  ],
+                  "projects": [
+                    {
+                      "name": "",
+                      "description": "",
+                      "link": "",
+                      "techStack": [],
+                      "bullets": []
+                    }
+                  ],
+                  "certifications": [],
+                  "education": [
+                    {
+                      "degree": "",
+                      "institution": "",
+                      "location": "",
+                      "dates": ""
+                    }
+                  ]
+                }
+                """.formatted(
+                safe(originalPrompt),
+                safe(resumeText),
+                safe(jdText)
+        );
+    }
+
+    // =========================================================
+    // 4. REMOVE OPTIMIZATION - PATCH VERSION
     // =========================================================
 
     public String buildRemoveOptimizationPatchPrompt(
@@ -447,8 +570,8 @@ public class PromptService {
         return """
                 You are a professional resume editor.
 
-                Your task is to improve the ORIGINAL STRUCTURED RESUME
-                according to the USER REQUEST and JOB DESCRIPTION.
+                Improve the ORIGINAL STRUCTURED RESUME according to the
+                USER REQUEST and JOB DESCRIPTION.
 
                 IMPORTANT:
 
@@ -457,8 +580,6 @@ public class PromptService {
                 You are generating ONLY a PATCH.
 
                 Java will apply this patch to the original resume.
-
-                The original resume remains the source of truth.
 
                 =========================================================
                 IMMUTABLE DATA
@@ -489,87 +610,58 @@ public class PromptService {
                 ALLOWED CHANGES
                 =========================================================
 
-                You may modify ONLY:
+                Only modify:
 
-                1. summary
-                2. technical skills
-                3. existing experience bullet wording
-                4. existing project descriptions
-                5. existing project technology stacks
-                6. existing project bullet wording
-
-                Do not create a new job.
-                Do not create a new project.
-                Do not create a new client.
-                Do not change dates.
+                - summary
+                - technical skills
+                - existing experience bullets
+                - existing project descriptions
+                - existing project technology stacks
+                - existing project bullets
 
                 =========================================================
                 NATURAL WRITING
                 =========================================================
 
-                The final resume should look like a normal professional
-                resume written by the candidate.
+                The result should look like a normal resume written by
+                the candidate.
 
-                It must NOT look like text generated specifically by
-                comparing the resume with a JD.
+                Do NOT:
 
-                DO NOT:
-
-                - copy sentences from the JD
-                - copy JD sentence structure
-                - repeat JD terminology unnecessarily
-                - stuff keywords
-                - repeat the same technology across many bullets
+                - copy JD sentences
+                - mirror JD sentence structure
+                - keyword stuff
+                - repeat keywords unnecessarily
                 - use generic filler
-                - use exaggerated language
-                - use artificial optimization language
+                - use AI-sounding language
+                - use vendor optimization language
                 - mention AI
-                - mention resume optimization
-                - mention candidate matching
-                - mention ATS optimization
+                - mention ATS
+                - mention matching
+                - mention optimization
                 - mention the job description
-                - mention vendor optimization
-                - use phrases such as "aligned with the JD"
-                - use phrases such as "optimized for the role"
-                - use phrases such as "leveraged industry-leading"
-                - use vague buzzwords without actual work
 
-                Prefer:
+                Prefer straightforward technical language.
 
-                - simple technical language
-                - concrete responsibilities
-                - implementation details
-                - integration work
-                - debugging
-                - API work
-                - database work
-                - testing
-                - deployment
-                - maintenance
-                - meaningful technical context
+                Avoid putting many unrelated technologies in one sentence.
 
-                Vary sentence structure naturally.
-
-                Do not put many unrelated technologies into one sentence.
-
-                A technology should appear only where it naturally belongs.
+                Avoid repeating the same technology across multiple bullets
+                unless it is naturally necessary.
 
                 =========================================================
                 SUMMARY
                 =========================================================
 
-                Improve the summary only if useful.
+                You may improve the summary.
 
-                The summary must:
+                Keep it:
 
-                - be concise
-                - sound natural
-                - describe the candidate's actual background
-                - emphasize relevant existing strengths
-                - avoid exaggerated claims
-                - avoid generic buzzwords
+                - concise
+                - natural
+                - professional
+                - based on supported experience
 
-                If no improvement is needed:
+                If no change is required:
 
                 "summary": null
 
@@ -579,12 +671,7 @@ public class PromptService {
 
                 Do not duplicate existing skills.
 
-                Only add a skill when it is explicitly requested by the
-                USER REQUEST or clearly required by the JD and the application
-                workflow permits it.
-
-                Do not create supporting experience merely to justify a
-                missing skill.
+                Do not add unrelated technologies.
 
                 =========================================================
                 EXPERIENCE
@@ -595,156 +682,995 @@ public class PromptService {
                 Example:
 
                 experience[0] = Java Developer
-                experience[1] = Software Engineer
 
-                Java Developer uses:
+                Therefore:
 
                 "experienceIndex": 0
 
-                You may rewrite an existing bullet when the rewrite makes
-                the existing work clearer and more relevant.
+                bulletsToRewrite uses the ZERO-BASED index of the
+                ORIGINAL bullet.
 
-                Use bulletsToRewrite.
-
-                bulletIndex is ZERO-BASED and refers to the ORIGINAL bullet.
-
-                Do not change:
+                Never change:
 
                 - company
-                - title
+                - job title
                 - location
                 - dates
 
-                Do not invent:
+                Never fabricate:
 
-            RULES:
-            - No JD copy/paste
-            - No JD sentence mirroring
-            - No keyword stuffing
-            - No vendor optimization language
-            - No AI-sounding language
-            - No fake metrics
-            - No fake clients/projects
-            - No duplicate responsibilities
-            - Authentic, natural wording only
+                - clients
+                - projects
+                - employment
+                - dates
+                - duration
+                - metrics
+                - achievements
 
-            ORIGINAL USER PROMPT:
-            %s
+                =========================================================
+                DOMAIN
+                =========================================================
 
-            ORIGINAL RESUME:
-            %s
+                Only use domain-specific terminology when supported by
+                the original resume.
 
-            JOB DESCRIPTION:
-            %s
+                Never create domain experience.
 
-            Return ONLY valid JSON.
+                =========================================================
+                PROJECTS
+                =========================================================
 
-            {
-              "name": "",
-              "contact": {
-                "phone": "",
-                "email": "",
-                "github": "",
-                "linkedin": ""
-              },
-              "summary": "",
-              "technicalSkills": [],
-              "experience": [],
-              "projects": [],
-              "certifications": [],
-              "education": []
-            }
-            """.formatted(originalPrompt == null ? "" : originalPrompt, resumeText, jdText);
+                projectIndex is ZERO-BASED.
+
+                You may improve:
+
+                - description
+                - existing technologies
+                - existing bullets
+
+                Never change:
+
+                - project name
+                - project link
+
+                Never create a new project.
+
+                =========================================================
+                USER REQUEST
+                =========================================================
+
+                %s
+
+                =========================================================
+                JOB DESCRIPTION
+                =========================================================
+
+                %s
+
+                =========================================================
+                ORIGINAL STRUCTURED RESUME
+                =========================================================
+
+                %s
+
+                =========================================================
+                OUTPUT
+                =========================================================
+
+                Return ONLY:
+
+                {
+                  "summary": null,
+                  "skillsToAdd": [],
+                  "experienceUpdates": [],
+                  "projectUpdates": []
+                }
+
+                Experience format:
+
+                {
+                  "experienceIndex": 0,
+                  "bulletsToAdd": [],
+                  "bulletsToRewrite": [
+                    {
+                      "bulletIndex": 0,
+                      "replacement": ""
+                    }
+                  ]
+                }
+
+                Project format:
+
+                {
+                  "projectIndex": 0,
+                  "description": null,
+                  "techStackToAdd": [],
+                  "bulletsToAdd": [],
+                  "bulletsToRewrite": [
+                    {
+                      "bulletIndex": 0,
+                      "replacement": ""
+                    }
+                  ]
+                }
+
+                Return ONLY actual changes.
+
+                Do NOT return the complete resume.
+
+                If there are no changes:
+
+                {
+                  "summary": null,
+                  "skillsToAdd": [],
+                  "experienceUpdates": [],
+                  "projectUpdates": []
+                }
+
+                JSON RULES:
+
+                - valid JSON only
+                - double quotes
+                - no Markdown
+                - no comments
+                - no trailing commas
+                - no explanation
+                """.formatted(
+                safe(originalPrompt),
+                safe(jdText),
+                resumeJson
+        );
     }
 
     // =========================================================
-    // 3. MAIN JD-TARGETED RESUME GENERATION
+    // 5. MAIN RESUME GENERATION
+    // =========================================================
+    //
+    // IMPORTANT:
+    // This intentionally delegates to the PATCH version.
+    //
+    // Gemini returns only changes.
+    // Java keeps the original resume.
     // =========================================================
 
-    public String buildResumePrompt(GeneratedResume resume, String jdText, List<String> missingSkills) {
-        String skillsText = (missingSkills == null || missingSkills.isEmpty())
-                ? "None"
-                : String.join(", ", missingSkills);
+    public String buildResumePrompt(
+            GeneratedResume resume,
+            String jdText,
+            List<String> missingSkills) {
 
-        String resumeJson;
-        try {
-            resumeJson = objectMapper.writeValueAsString(resume);
-        } catch (JsonProcessingException e) {
-            throw new IllegalStateException("Could not serialize resume.", e);
-        }
+        return buildResumePatchPrompt(
+                resume,
+                jdText,
+                missingSkills
+        );
+    }
+
+    // =========================================================
+    // 6. MAIN RESUME PATCH PROMPT
+    // =========================================================
+
+    public String buildResumePatchPrompt(
+            GeneratedResume resume,
+            String jdText,
+            List<String> missingSkills) {
+
+        String resumeJson = serializeResume(resume);
+
+        String skillsText =
+                formatMissingSkills(missingSkills);
 
         return """
-            You are an expert technical recruiter and resume writer.
+                You are an experienced technical resume editor.
 
-            GOAL:
-            Rewrite the resume to emphasize authentic, candidate-specific experience
-            that is naturally relevant to the JD.
+                Your task is to make small, useful and natural improvements
+                to the ORIGINAL RESUME based on the JOB DESCRIPTION.
 
-            LOCKED FACTS - NEVER CHANGE:
-            Name, phone, email, LinkedIn, GitHub, client names, company names,
-            job titles, employment order, dates, duration, education,
-            certifications, project names and existing URLs.
+                IMPORTANT:
 
-            RULES:
-            - Do NOT copy JD sentences or mirror JD phrasing.
-            - Do NOT add vendor-style optimization language.
-            - Do NOT keyword stuff.
-            - Do NOT invent clients, projects, dates, or metrics.
-            - Preserve the candidate’s real history and timeline.
-            - Add only technical skills explicitly required by the JD AND supported
-              by existing responsibilities.
-            - Strengthen existing bullets with natural, professional wording.
-            - Keep the resume human-written in tone, not AI-polished.
+                You are NOT generating a new resume.
 
-            DOMAIN EXPERIENCE:
-            - Improve wording only if domain evidence exists in the resume.
-            - Never fabricate domain experience or extend duration.
+                You are returning ONLY a PATCH.
 
-            SUMMARY:
-            Rewrite the summary to highlight relevant strengths naturally,
-            without JD mirroring or artificial optimization.
+                Java will apply the patch to the original resume.
 
-            AUTHENTICITY:
-            - Write like an experienced professional describing real project work.
-            - Avoid generic filler, vendor optimization language, or AI-sounding phrasing.
+                =========================================================
+                PRIMARY GOAL
+                =========================================================
 
-            MISSING / WEAK SKILLS:
-            %s
+                Make the existing resume naturally relevant to the role.
 
-            JOB DESCRIPTION:
-            %s
+                The final resume should look like the candidate's normal
+                professional resume.
 
-            ORIGINAL STRUCTURED RESUME:
-            %s
+                Do not make it look like it was generated by copying
+                or translating the job description.
 
-            OUTPUT:
-            Return ONLY one valid JSON object.
+                Do not try to include every JD keyword.
 
-            {
-              "name": "",
-              "contact": {
-                "phone": "",
-                "email": "",
-                "github": "",
-                "linkedin": ""
-              },
-              "summary": "",
-              "technicalSkills": [],
-              "experience": [],
-              "projects": [],
-              "certifications": [],
-              "education": []
-            }
+                Make only useful changes.
 
-            JSON RULES:
-            - Valid JSON only
-            - Double quotes only
-            - No Markdown
-            - No comments
-            - No trailing commas
-            - Empty string for unavailable scalar values
-            - Empty array for unavailable lists
-            """.formatted(skillsText, jdText, resumeJson);
+                =========================================================
+                IMMUTABLE FACTS
+                =========================================================
+
+                NEVER modify:
+
+                - name
+                - phone
+                - email
+                - GitHub
+                - LinkedIn
+                - company names
+                - client names
+                - job titles
+                - locations
+                - employment dates
+                - employment order
+                - employment duration
+                - education
+                - degrees
+                - certifications
+                - project names
+                - project links
+                - existing URLs
+
+                =========================================================
+                ALLOWED CHANGES
+                =========================================================
+
+                You may return:
+
+                1. summary
+                2. skillsToAdd
+                3. experienceUpdates
+                4. projectUpdates
+
+                Do NOT return the complete resume.
+
+                =========================================================
+                SUMMARY
+                =========================================================
+
+                Rewrite the summary only when useful.
+
+                The summary should:
+
+                - be concise
+                - sound natural
+                - describe actual background
+                - emphasize relevant existing strengths
+                - avoid exaggerated claims
+                - avoid generic buzzwords
+
+                Do not mention:
+
+                - AI
+                - ATS
+                - optimization
+                - matching
+                - job description
+                - resume generation
+
+                If no change is needed:
+
+                "summary": null
+
+                =========================================================
+                MISSING / WEAK SKILLS
+                =========================================================
+
+                The analysis identified:
+
+                %s
+
+                Do not blindly add every skill.
+
+                Do not duplicate existing skills.
+
+                Do not add unrelated technologies.
+
+                =========================================================
+                EXPERIENCE
+                =========================================================
+
+                experienceIndex is ZERO-BASED.
+
+                bulletIndex is ZERO-BASED.
+
+                You may rewrite an existing bullet when the rewrite
+                makes the existing work clearer and more relevant.
+
+                Prefer rewriting an existing bullet instead of adding
+                unnecessary new bullets.
+
+                Do not invent:
+
+                - companies
+                - clients
+                - projects
+                - achievements
+                - metrics
+                - dates
+                - employment
+                - experience duration
+
+                =========================================================
+                EXPERIENCE WRITING
+                =========================================================
+
+                Write like a developer describing real work.
+
+                Prefer concrete wording:
+
+                - developed
+                - implemented
+                - integrated
+                - maintained
+                - tested
+                - debugged
+                - improved
+                - supported
+                - refactored
+                - designed
+
+                Avoid generic buzzwords.
+
+                Avoid repeating the same technology unnecessarily.
+
+                Avoid putting many technologies into one sentence.
+
+                Do not mirror the JD.
+
+                Do not copy JD wording.
+
+                =========================================================
+                DOMAIN
+                =========================================================
+
+                Domain-specific experience can only be reflected when
+                supported by the original resume.
+
+                Do not create domain experience.
+
+                =========================================================
+                PROJECTS
+                =========================================================
+
+                projectIndex is ZERO-BASED.
+
+                You may improve existing projects.
+
+                Never:
+
+                - create a new project
+                - change project name
+                - change project link
+                - invent results
+                - invent metrics
+
+                =========================================================
+                AUTHENTICITY
+                =========================================================
+
+                The final resume should NOT contain obvious signs of
+                automated JD tailoring.
+
+                Avoid:
+
+                - JD copy/paste
+                - JD sentence mirroring
+                - keyword stuffing
+                - repetitive keywords
+                - generic filler
+                - artificial optimization
+                - vendor-specific wording
+                - AI-sounding language
+                - exaggerated claims
+
+                Do not mention:
+
+                - AI
+                - ATS
+                - optimization
+                - candidate matching
+                - job description
+                - vendor optimization
+
+                Avoid phrases such as:
+
+                "aligned with the job description"
+
+                "optimized for the role"
+
+                "ATS optimized"
+
+                "leveraged industry-leading"
+
+                "results-driven professional"
+
+                unless genuinely appropriate.
+
+                Prefer straightforward developer language.
+
+                =========================================================
+                JOB DESCRIPTION
+                =========================================================
+
+                %s
+
+                =========================================================
+                ORIGINAL STRUCTURED RESUME
+                =========================================================
+
+                %s
+
+                =========================================================
+                OUTPUT
+                =========================================================
+
+                Return ONLY valid JSON:
+
+                {
+                  "summary": null,
+                  "skillsToAdd": [],
+                  "experienceUpdates": [],
+                  "projectUpdates": []
+                }
+
+                Experience update:
+
+                {
+                  "experienceIndex": 0,
+                  "bulletsToAdd": [],
+                  "bulletsToRewrite": [
+                    {
+                      "bulletIndex": 0,
+                      "replacement": ""
+                    }
+                  ]
+                }
+
+                Project update:
+
+                {
+                  "projectIndex": 0,
+                  "description": null,
+                  "techStackToAdd": [],
+                  "bulletsToAdd": [],
+                  "bulletsToRewrite": [
+                    {
+                      "bulletIndex": 0,
+                      "replacement": ""
+                    }
+                  ]
+                }
+
+                IMPORTANT:
+
+                Return ONLY actual changes.
+
+                Do NOT return unchanged resume data.
+
+                Do NOT return the complete resume.
+
+                If no change is needed, return empty arrays and null values.
+
+                JSON RULES:
+
+                - JSON only
+                - double quotes
+                - no Markdown
+                - no comments
+                - no trailing commas
+                - no explanation
+                """.formatted(
+                skillsText,
+                safe(jdText),
+                resumeJson
+        );
     }
-            }
-            
+
+    // =========================================================
+    // 7. CUSTOM USER PROMPT
+    // =========================================================
+
+    public String buildCustomPrompt(
+            GeneratedResume resume,
+            String jdText,
+            String customPrompt) {
+
+        String resumeJson = serializeResume(resume);
+
+        return """
+                You are a professional resume editor.
+
+                Follow the USER REQUEST.
+
+                Use the ORIGINAL STRUCTURED RESUME as the source of truth.
+
+                Preserve:
+
+                - identity
+                - contact information
+                - company names
+                - client names
+                - job titles
+                - locations
+                - employment dates
+                - employment order
+                - education
+                - certifications
+                - project names
+                - project links
+
+                Never fabricate:
+
+                - clients
+                - companies
+                - projects
+                - employment
+                - dates
+                - degrees
+                - certifications
+                - metrics
+                - achievements
+                - experience duration
+                - domain experience
+
+                Keep the writing:
+
+                - natural
+                - specific
+                - professional
+                - technical
+                - candidate-specific
+
+                Avoid:
+
+                - JD copy/paste
+                - JD mirroring
+                - keyword stuffing
+                - repetition
+                - generic filler
+                - AI-sounding language
+                - artificial optimization language
+
+                USER REQUEST:
+
+                %s
+
+                ORIGINAL STRUCTURED RESUME:
+
+                %s
+
+                JOB DESCRIPTION:
+
+                %s
+
+                Return ONLY the requested result.
+                """.formatted(
+                safe(customPrompt),
+                resumeJson,
+                safe(jdText)
+        );
+    }
+
+    // =========================================================
+    // 8. CUSTOM STRUCTURED ANALYSIS
+    // =========================================================
+
+    public String buildCustomPromptStructureResult(
+            GeneratedResume resume,
+            String jdText,
+            String customPrompt) {
+
+        String resumeJson = serializeResume(resume);
+
+        return """
+                You are a professional resume analysis assistant.
+
+                Analyze the ORIGINAL STRUCTURED RESUME according to the
+                USER REQUEST and compare it with the JOB DESCRIPTION.
+
+                =========================================================
+                RULES
+                =========================================================
+
+                1. Return ONLY valid JSON.
+                2. Do NOT return Markdown.
+                3. Do NOT add explanations.
+                4. Do NOT invent candidate information.
+                5. Do NOT assume unsupported skills.
+                6. Use only evidence from the resume and JD.
+
+                Preserve:
+
+                - name
+                - contact
+                - company names
+                - client names
+                - job titles
+                - locations
+                - dates
+                - employment order
+                - education
+                - certifications
+                - project names
+                - project URLs
+
+                =========================================================
+                USER REQUEST
+                =========================================================
+
+                %s
+
+                =========================================================
+                ANALYSIS
+                =========================================================
+
+                Calculate:
+
+                - match score
+                - core requirements
+                - matching skills
+                - missing skills
+                - preferred skills
+                - unsupported skills
+                - relevant experience
+                - experience gaps
+                - seniority
+                - domain experience
+                - technology relevance
+                - safe improvements
+                - cannot claim
+                - authenticity
+                - risk
+                - submission decision
+                - top fixes
+
+                Never invent experience.
+
+                =========================================================
+                REQUIRED JSON
+                =========================================================
+
+                {
+                  "matchScore": 0.0,
+                  "coreRequirements": {
+                    "requirements": [
+                      {
+                        "requirement": "",
+                        "category": "",
+                        "status": "PASS",
+                        "evidence": ""
+                      }
+                    ]
+                  },
+                  "skillAnalysis": {
+                    "matchingSkills": [],
+                    "missingSkills": [],
+                    "preferredSkills": [],
+                    "unsupportedSkills": []
+                  },
+                  "experienceAnalysis": {
+                    "relevance": "",
+                    "relevantExperience": [],
+                    "experienceGaps": []
+                  },
+                  "seniority": {
+                    "requiredLevel": "",
+                    "candidateLevel": "",
+                    "status": "",
+                    "evidence": ""
+                  },
+                  "domainExperience": {
+                    "requiredDomain": "",
+                    "candidateDomain": "",
+                    "status": "",
+                    "evidence": ""
+                  },
+                  "technologyRelevance": {
+                    "relevantTechnologies": [],
+                    "missingTechnologies": [],
+                    "outdatedOrIrrelevantTechnologies": []
+                  },
+                  "canImproveSafely": [],
+                  "cannotClaim": [],
+                  "authenticity": {
+                    "level": "LOW",
+                    "concerns": []
+                  },
+                  "risk": {
+                    "level": "LOW",
+                    "risks": []
+                  },
+                  "submissionDecision": "SUBMIT",
+                  "topFixes": []
+                }
+
+                ORIGINAL STRUCTURED RESUME:
+
+                %s
+
+                JOB DESCRIPTION:
+
+                %s
+
+                Return ONLY the JSON object.
+                """.formatted(
+                safe(customPrompt),
+                resumeJson,
+                safe(jdText)
+        );
+    }
+
+    // =========================================================
+    // 9. MISSING SKILLS
+    // =========================================================
+
+    public String buildMissingSkillsPrompt(
+            String resumeText,
+            String jdText) {
+
+        return """
+                Compare the ORIGINAL RESUME with the JOB DESCRIPTION.
+
+                Find important skills that are:
+
+                1. Explicitly required but missing.
+                2. Strongly preferred but missing.
+                3. Present but weakly represented.
+
+                Consider:
+
+                - programming languages
+                - frameworks
+                - libraries
+                - databases
+                - cloud
+                - messaging
+                - testing
+                - DevOps
+                - tools
+                - platforms
+                - technical concepts
+                - domain-specific skills
+
+                IMPORTANT:
+
+                Do not report a skill as missing if an equivalent
+                technology is clearly present.
+
+                Do not assume that the candidate possesses a skill
+                merely because it is common for the role.
+
+                Do not invent candidate experience.
+
+                Domain-specific skills require evidence from the resume.
+
+                Return ONLY valid JSON.
+
+                {
+                  "missingSkills": [
+                    "Skill 1",
+                    "Skill 2"
+                  ]
+                }
+
+                ORIGINAL RESUME:
+
+                %s
+
+                JOB DESCRIPTION:
+
+                %s
+                """.formatted(
+                safe(resumeText),
+                safe(jdText)
+        );
+    }
+
+    // =========================================================
+    // 10. RESUME PARSER
+    // =========================================================
+
+    public String resumeParserPrompt(String resumeText) {
+
+        return """
+                You are a resume parsing engine.
+
+                TASK:
+
+                Extract structured data ONLY from the ORIGINAL RESUME TEXT.
+
+                This is an extraction task.
+
+                It is NOT a writing task.
+
+                It is NOT an enhancement task.
+
+                =========================================================
+                STRICT RULES
+                =========================================================
+
+                - Extract only information explicitly present.
+                - Never invent.
+                - Never guess.
+                - Never infer unsupported information.
+                - Never improve wording.
+                - Never summarize.
+                - Never create missing skills.
+                - Never create missing experience.
+                - Never create projects.
+                - Never create companies.
+                - Never create dates.
+                - Never create certifications.
+                - Never create education.
+                - Preserve original order.
+                - Keep experience and projects separate.
+
+                If a scalar value is unavailable:
+
+                ""
+
+                If a list is unavailable:
+
+                []
+
+                =========================================================
+                CONTACT
+                =========================================================
+
+                Extract:
+
+                - name
+                - phone
+                - email
+                - GitHub
+                - LinkedIn
+
+                =========================================================
+                SUMMARY
+                =========================================================
+
+                Extract the existing summary.
+
+                Do not create a summary.
+
+                =========================================================
+                EXPERIENCE
+                =========================================================
+
+                Extract every employment/professional experience entry.
+
+                Preserve:
+
+                - job title
+                - company
+                - location
+                - dates
+                - existing bullets
+
+                Do not merge separate jobs.
+
+                =========================================================
+                PROJECTS
+                =========================================================
+
+                Extract only explicitly mentioned projects.
+
+                Preserve:
+
+                - project name
+                - description
+                - link
+                - technologies
+                - bullets
+
+                Do not create projects from skills.
+
+                =========================================================
+                TECHNICAL SKILLS
+                =========================================================
+
+                Extract only explicitly mentioned technical skills.
+
+                Possible categories:
+
+                - Programming Languages
+                - Frameworks
+                - Databases
+                - Cloud
+                - DevOps
+                - Tools
+                - Testing
+                - Messaging
+
+                Do not add technologies based on assumptions.
+
+                =========================================================
+                CERTIFICATIONS
+                =========================================================
+
+                Extract only explicitly mentioned certifications.
+
+                =========================================================
+                EDUCATION
+                =========================================================
+
+                Extract every education entry.
+
+                Preserve:
+
+                - degree
+                - institution
+                - location
+                - dates
+
+                =========================================================
+                OUTPUT
+                =========================================================
+
+                Return ONLY valid JSON.
+
+                {
+                  "name": "",
+                  "contact": {
+                    "phone": "",
+                    "email": "",
+                    "github": "",
+                    "linkedin": ""
+                  },
+                  "summary": "",
+                  "technicalSkills": [
+                    {
+                      "category": "",
+                      "skills": []
+                    }
+                  ],
+                  "experience": [
+                    {
+                      "jobTitle": "",
+                      "company": "",
+                      "location": "",
+                      "dates": "",
+                      "bullets": []
+                    }
+                  ],
+                  "projects": [
+                    {
+                      "name": "",
+                      "description": "",
+                      "link": "",
+                      "techStack": [],
+                      "bullets": []
+                    }
+                  ],
+                  "certifications": [],
+                  "education": [
+                    {
+                      "degree": "",
+                      "institution": "",
+                      "location": "",
+                      "dates": ""
+                    }
+                  ]
+                }
+
+                JSON RULES:
+
+                - JSON only
+                - double quotes
+                - no Markdown
+                - no comments
+                - no trailing commas
+                - no additional fields
+
+                ORIGINAL RESUME TEXT:
+
+                %s
+                """.formatted(
+                safe(resumeText)
+        );
+    }
+}
